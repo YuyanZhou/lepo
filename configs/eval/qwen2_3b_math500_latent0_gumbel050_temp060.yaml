@@ -1,0 +1,25 @@
+# Qwen2.5-3B 在 MATH-500 上的评估配置
+
+model_path: "Qwen/Qwen2.5-3B"
+
+log_dir: "./eval_logs/Qwen2.5-3B"
+
+dataset:
+  name: "math500"
+  split: "test"
+  subset: "none"
+
+batch_size: 64
+
+# 采样配置
+num_samples: 8
+seed: 0
+
+generation_config:
+  latent_length: 0
+  do_latent_sample: false
+  do_discrete_sample: true
+  noise_type: "gumbel"
+  noise_strength: 0.5
+  temperature: 0.6
+  max_new_tokens: 2048

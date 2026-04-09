@@ -1,0 +1,60 @@
+seed: 42
+wandb_project: "LEPO-clean"
+
+model:
+  path: "Qwen/Qwen2.5-7B"
+  torch_dtype: "bfloat16"
+
+data:
+  train:
+    name: "dapo"
+    split: "train"
+    subset: "en"
+    shot: 0
+  eval:
+    name: "aime2024"
+    split: "none"
+    subset: "none"
+    shot: 0
+
+generation:
+  max_new_tokens: 2048
+  temperature: 1.0
+  top_p: 0.95
+  top_k: 30
+  latent_length: 64
+  do_latent_sample: false
+  do_discrete_sample: true
+  noise_type: "gumbel"
+  noise_strength: 0.50
+
+training:
+  learning_rate: 1e-6
+  adam_beta1: 0.9
+  adam_beta2: 0.99
+  weight_decay: 0.1
+  warmup_ratio: 0.03
+  lr_scheduler_type: "cosine"
+  bf16: true
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 256
+  steps_per_generation: 32
+  num_iterations: 2
+  num_generations: 8
+  max_prompt_length: 1024
+  num_train_epochs: 1
+  max_grad_norm: 1.0
+  logging_steps: 1
+  save_steps: 50
+  report_to: "wandb"
+
+eval:
+  do_eval: true
+  eval_strategy: "steps"
+  eval_steps: 5
+  per_device_eval_batch_size: 8
+  eval_accumulation_steps: 8
+  eval_on_start: true
+
+output:
+  base_dir: "./outputs"

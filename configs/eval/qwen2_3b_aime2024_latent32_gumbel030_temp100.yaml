@@ -1,0 +1,27 @@
+# Qwen2.5-3B LEPO 在 AIME2024 上的评估配置
+# latent_length=32, gumbel noise=0.30
+
+model_path: "Qwen/Qwen2.5-3B"
+# model_path: "./outputs/Qwen2.5-3B-LEPO-xxx/checkpoint-100"
+
+log_dir: "./eval_logs/Qwen2.5-3B-Latent"
+
+dataset:
+  name: "aime2024"
+  split: "test"
+  subset: "none"
+
+batch_size: 64
+
+# 采样配置
+num_samples: 8
+seed: 0
+
+generation_config:
+  latent_length: 32
+  do_latent_sample: false
+  do_discrete_sample: true
+  noise_type: "gumbel"
+  noise_strength: 0.30
+  temperature: 1.0
+  max_new_tokens: 2048
