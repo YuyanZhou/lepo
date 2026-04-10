@@ -1,4 +1,4 @@
-# Qwen2.5-3B 在 MATH-500 上的评估配置
+# Qwen2.5-3B evaluation config on MATH-500
 
 model_path: "Qwen/Qwen2.5-3B"
 
@@ -11,7 +11,7 @@ dataset:
 
 batch_size: 64
 
-# 采样配置
+# Sampling configuration
 num_samples: 8
 seed: 0
 

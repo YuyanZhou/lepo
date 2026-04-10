@@ -1,10 +1,10 @@
 """
-分布式 Latent 模型评估脚本
+Distributed Latent Model Evaluation Script
 
-用法:
+Usage:
     torchrun --nproc_per_node=8 scripts/eval_latent.py --config configs/eval/xxx.yaml
 
-或使用启动脚本:
+Or use the launch script:
     ./scripts/run_eval.sh configs/eval/xxx.yaml
 """
 
@@ -44,7 +44,7 @@ def parse_args():
 
 
 def setup_distributed():
-    """初始化分布式环境"""
+    """Initialize distributed environment"""
     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
         rank = int(os.environ["RANK"])
         world_size = int(os.environ["WORLD_SIZE"])
@@ -65,26 +65,26 @@ def setup_distributed():
 
 
 def get_gpu_memory_mb(gpu_id):
-    """获取当前 GPU 已使用的显存 (MB)"""
+    """Get current GPU memory usage (MB)"""
     allocated = torch.cuda.memory_allocated(gpu_id) / (1024 * 1024)
     reserved = torch.cuda.memory_reserved(gpu_id) / (1024 * 1024)
     return allocated, reserved
 
 
 def get_peak_gpu_memory_mb(gpu_id):
-    """获取峰值 GPU 显存使用量 (MB)"""
+    """Get peak GPU memory usage (MB)"""
     peak_reserved = torch.cuda.max_memory_reserved(gpu_id) / (1024 * 1024)
     return peak_reserved
 
 
 def get_interleaved_indices(total_size, world_size, rank):
-    """交错分配索引，确保负载均衡"""
+    """Distribute indices in interleaved fashion for load balancing"""
     indices = list(range(rank, total_size, world_size))
     return indices
 
 
 def get_response_transformers(prompts, model, tokenizer, generation_config, gpu, batch_size=32):
-    """批量生成回复"""
+    """Generate responses in batches"""
     responses = []
     actual_model = model.module if hasattr(model, 'module') else model
 
@@ -133,35 +133,35 @@ def get_response_transformers(prompts, model, tokenizer, generation_config, gpu,
 def main():
     args = parse_args()
 
-    # 初始化分布式环境
+    # Initialize distributed environment
     is_distributed, rank, world_size, gpu = setup_distributed()
 
-    # 记录开始时间
+    # Record start time
     eval_start_time = time.time()
 
     def print_rank0(*print_args, **kwargs):
         if rank == 0:
             print(*print_args, **kwargs)
 
-    # 加载配置
+    # Load configuration
     with open(args.config, 'r') as f:
         config = yaml.safe_load(f)
 
-    # 设置随机种子
+    # Set random seed
     set_deterministic_seed(args.seed)
 
-    # 从配置中获取参数
+    # Get parameters from configuration
     MODEL_PATH = config['model_path']
     LOG_DIR = config.get('log_dir', './eval_logs')
     DATASET_NAME = config['dataset']['name']
     DATASET_SPLIT = config['dataset'].get('split', 'test')
     DATASET_SUBSET = config['dataset'].get('subset', 'none')
     BATCH_SIZE = config.get('batch_size', 64)
-    # 优先使用命令行参数，否则从配置文件读取，最后使用默认值
+    # Priority: command line args > config file > default values
     NUM_SAMPLES = args.num_samples if args.num_samples != 1 else config.get('num_samples', 1)
     SEED = args.seed if args.seed != 0 else config.get('seed', 0)
 
-    # 生成配置
+    # Generation configuration
     g_config = config.get('generation_config', {})
     latent_length = g_config.get('latent_length', 0)
     do_latent_sample = g_config.get('do_latent_sample', False)
@@ -174,23 +174,23 @@ def main():
     noise_str = str(int(noise_strength * 100)).zfill(3)
     temp_str = str(int(temperature * 100)).zfill(3)
 
-    # 模型名称
+    # Model name
     MODEL_NAME = MODEL_PATH.split("/")[-1]
 
-    # 确保日志目录存在
+    # Ensure log directory exists
     if rank == 0:
         os.makedirs(LOG_DIR, exist_ok=True)
 
     if is_distributed:
         dist.barrier()
 
-    # 创建日志文件名
+    # Create log filename
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     log_filename = f"{MODEL_NAME}_{DATASET_NAME}_{DATASET_SPLIT}_{DATASET_SUBSET}_latent{latent_length}_noise_{noise_type}_{noise_str}_temp{temp_str}_{NUM_SAMPLES}samples_seed{SEED}_{timestamp}_rank{rank}.jsonl"
     log_path = os.path.join(LOG_DIR, log_filename)
     summary_path = os.path.join(LOG_DIR, f"summary_{MODEL_NAME}_{DATASET_NAME}_{DATASET_SPLIT}_{DATASET_SUBSET}_latent{latent_length}_noise_{noise_type}_{noise_str}_temp{temp_str}_{NUM_SAMPLES}samples_seed{SEED}_{timestamp}.json")
 
-    # 加载 tokenizer
+    # Load tokenizer
     print_rank0(f"Loading model {MODEL_PATH}...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 
@@ -200,7 +200,7 @@ def main():
 
     tokenizer.padding_side = 'left'
 
-    # 加载模型
+    # Load model
     if 'llama' in MODEL_PATH.lower():
         model = LatentLlamaForCausalLM.from_pretrained(
             MODEL_PATH,
@@ -220,7 +220,7 @@ def main():
     model.eval()
     print_rank0("Model loaded.")
 
-    # 配置生成参数
+    # Configure generation parameters
     generation_config = LatentGenerationConfig(
         max_new_tokens=max_new_tokens,
         pad_token_id=tokenizer.eos_token_id,
@@ -235,7 +235,7 @@ def main():
         noise_strength=noise_strength,
     )
 
-    # 加载数据集
+    # Load dataset
     print_rank0("Loading dataset...")
     dataset = get_dataset(DATASET_NAME, DATASET_SPLIT, DATASET_SUBSET, shot=0)
 
@@ -248,7 +248,7 @@ def main():
     local_total_questions = 0
     local_total_response_length = 0.0
 
-    # 分配数据
+    # Distribute data
     if args.load_balance_method == 'interleaved':
         local_indices = get_interleaved_indices(total_size, world_size, rank)
         print(f"Rank {rank}: Processing {len(local_indices)} questions with interleaved indices")
@@ -262,11 +262,11 @@ def main():
     local_tot = len(local_indices)
     local_total_questions = local_tot
 
-    # 进度条 (仅主进程)
+    # Progress bar (main process only)
     if rank == 0:
         pbar = tqdm(total=local_tot, desc=f"GPU 0 Progress")
 
-    # 开始评估
+    # Start evaluation
     with open(log_path, 'w', encoding='utf-8') as log_file:
         for question_idx, global_idx in enumerate(local_indices):
             question_data = dataset[global_idx]
@@ -296,7 +296,7 @@ def main():
             inference_time = time.time() - start_time
             avg_inference_time_per_sample = inference_time / NUM_SAMPLES
 
-            # 处理每个 response
+            # Process each response
             for sample_idx, response in enumerate(responses_batch):
                 response_tokenized = tokenizer(response, return_tensors="pt")
                 response_length = response_tokenized['attention_mask'].sum().item()
@@ -354,7 +354,7 @@ def main():
     if rank == 0:
         pbar.close()
 
-    # 收集所有进程的结果
+    # Collect results from all processes
     if is_distributed:
         local_correct_tensor = torch.tensor([local_total_correct], dtype=torch.float32).cuda(gpu)
         local_questions_tensor = torch.tensor([local_total_questions], dtype=torch.float32).cuda(gpu)
@@ -390,7 +390,7 @@ def main():
     overall_accuracy = total_correct / total_questions if total_questions > 0 else 0.0
     overall_avg_length = total_length / total_questions if total_questions > 0 else 0.0
 
-    # 收集峰值 GPU 内存
+    # Collect peak GPU memory
     if is_distributed:
         peak_gpu_memory = get_peak_gpu_memory_mb(gpu)
         peak_gpu_memory_tensor = torch.tensor([peak_gpu_memory], dtype=torch.float32).cuda(gpu)
@@ -402,12 +402,12 @@ def main():
         all_peak_memories_list = [get_peak_gpu_memory_mb(gpu)]
         max_peak_gpu_memory = all_peak_memories_list[0]
 
-    # 主进程保存汇总结果
+    # Main process saves summary results
     if rank == 0:
         print_rank0(f"Overall Average Accuracy: {overall_accuracy:.4f}")
         print_rank0(f"Overall Average Response Length: {overall_avg_length:.2f}")
 
-        # 合并所有进程的日志文件
+        # Merge log files from all processes
         all_logs = []
         question_level_stats = {}
 
@@ -434,7 +434,7 @@ def main():
             for log in all_logs:
                 f.write(json.dumps(log, ensure_ascii=False) + '\n')
 
-        # 计算统计分布
+        # Calculate statistical distributions
         accuracies = [stats['accuracy'] for stats in question_level_stats.values()]
         lengths = [stats['avg_response_length'] for stats in question_level_stats.values()]
 
@@ -502,7 +502,7 @@ def main():
         with open(summary_path, 'w', encoding='utf-8') as f:
             json.dump(summary, f, indent=2, ensure_ascii=False)
 
-        # 删除临时日志文件
+        # Delete temporary log files
         for r in range(world_size):
             rank_log_file = os.path.join(LOG_DIR, f"{MODEL_NAME}_{DATASET_NAME}_{DATASET_SPLIT}_{DATASET_SUBSET}_latent{latent_length}_noise_{noise_type}_{noise_str}_temp{temp_str}_{NUM_SAMPLES}samples_seed{SEED}_{timestamp}_rank{r}.jsonl")
             if os.path.exists(rank_log_file):
@@ -514,7 +514,7 @@ def main():
         print(f"Overall Average Accuracy: {overall_accuracy:.4f}")
         print(f"Total Execution Time: {total_execution_time:.2f} seconds")
 
-    # 清理分布式环境
+    # Clean up distributed environment
     if is_distributed:
         dist.destroy_process_group()
 

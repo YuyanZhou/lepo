@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# 评估启动脚本
-# 用法: ./scripts/run_eval.sh <config_file>
-# 示例: ./scripts/run_eval.sh configs/eval/qwen2_3b_aime2024.yaml
+# Evaluation launch script
+# Usage: ./scripts/run_eval.sh <config_file>
+# Example: ./scripts/run_eval.sh configs/eval/qwen2_3b_aime2024.yaml
 
 CONFIG_FILE=$1
 
@@ -12,15 +12,15 @@ if [ -z "$CONFIG_FILE" ]; then
     exit 1
 fi
 
-# 设置 GPU
+# Set GPUs
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 NUM_GPUS=8
 
-# 设置 PYTHONPATH，确保能找到 src 模块
+# Set PYTHONPATH to ensure src module can be found
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PYTHONPATH="${SCRIPT_DIR}/..${PYTHONPATH:+:$PYTHONPATH}"
 
-# 设置 HuggingFace 缓存目录（强制覆盖，避免权限问题）
+# Set HuggingFace cache directory (force override to avoid permission issues)
 export HF_HOME=~/.cache/huggingface
 export HF_DATASETS_CACHE=$HF_HOME/datasets
 export HUGGINGFACE_HUB_CACHE=$HF_HOME/hub

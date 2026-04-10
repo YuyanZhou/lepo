@@ -183,7 +183,7 @@ def get_mmlust_questions(shot=0, **kwargs) -> Dataset:
     return dataset
 
 
-# 数据集注册表
+# Dataset registry
 DATASET_REGISTRY = {
     "gsm8k": get_gsm8k_questions,
     "math500": get_math500_questions,
@@ -199,16 +199,16 @@ DATASET_REGISTRY = {
 
 
 def get_dataset(name: str, split: str = "train", subset: str = "all", shot: int = 0) -> Dataset:
-    """统一的数据集加载接口。
+    """Unified dataset loading interface.
 
     Args:
-        name: 数据集名称 (gsm8k, math500, math, dapo, aime2024, aime2025, etc.)
-        split: 数据集划分 (train, test, none)
-        subset: 子集名称 (用于 math, dapo 等数据集)
-        shot: few-shot 数量
+        name: Dataset name (gsm8k, math500, math, dapo, aime2024, aime2025, etc.)
+        split: Dataset split (train, test, none)
+        subset: Subset name (for datasets like math, dapo)
+        shot: Number of few-shot examples
 
     Returns:
-        Dataset: 加载的数据集
+        Dataset: The loaded dataset
     """
     if name not in DATASET_REGISTRY:
         raise ValueError(f"Unknown dataset: {name}. Available: {list(DATASET_REGISTRY.keys())}")

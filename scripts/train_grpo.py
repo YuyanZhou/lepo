@@ -1,7 +1,7 @@
 """
-GRPO 训练脚本
+GRPO Training Script
 
-使用方式:
+Usage:
     accelerate launch --config_file configs/accelerate/ds_zero2.yaml \
         scripts/train_grpo.py --config configs/grpo/qwen2_3b_grpo.yaml
 """
@@ -13,7 +13,7 @@ import datetime
 import yaml
 import torch
 
-# 添加项目根目录到 path
+# Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -25,7 +25,7 @@ from src.utils import set_deterministic_seed
 
 
 def load_config(config_path: str) -> dict:
-    """加载 YAML 配置文件。"""
+    """Load YAML configuration file."""
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
@@ -35,16 +35,16 @@ def main():
     parser.add_argument('--config', type=str, required=True, help='Path to config file')
     args = parser.parse_args()
 
-    # 加载配置
+    # Load configuration
     config = load_config(args.config)
 
-    # 设置随机种子
+    # Set random seed
     set_deterministic_seed(config['seed'])
 
-    # 设置 wandb project
+    # Set wandb project
     os.environ["WANDB_PROJECT"] = config.get('wandb_project', 'LEPO-clean')
 
-    # 加载数据集
+    # Load dataset
     print("Loading dataset...")
     train_data_cfg = config['data']['train']
     eval_data_cfg = config['data']['eval']
@@ -63,15 +63,15 @@ def main():
     )
     print("Dataset loaded.")
 
-    # 模型配置
+    # Model configuration
     model_path = config['model']['path']
     model_name = model_path.split("/")[-1]
 
-    # 加载 tokenizer
+    # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     print("Tokenizer loaded.")
 
-    # 生成配置
+    # Generation configuration
     gen_cfg = config['generation']
     generation_kwargs = {
         "max_new_tokens": gen_cfg['max_new_tokens'],
@@ -85,7 +85,7 @@ def main():
         "noise_strength": 0.05,
     }
 
-    # 训练配置
+    # Training configuration
     train_cfg = config['training']
     eval_cfg = config['eval']
     output_cfg = config['output']
@@ -128,7 +128,7 @@ def main():
         eval_on_start=eval_cfg['eval_on_start'],
     )
 
-    # 加载模型
+    # Load model
     print("Loading model...")
     torch_dtype = getattr(torch, config['model']['torch_dtype'])
     model = AutoModelForCausalLM.from_pretrained(
@@ -138,7 +138,7 @@ def main():
     ).to("cuda")
     print("Model loaded.")
 
-    # 训练
+    # Training
     trainer = GRPOTrainer(
         model=model,
         processing_class=tokenizer,

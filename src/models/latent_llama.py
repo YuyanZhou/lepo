@@ -34,7 +34,7 @@ logger = logging.get_logger(__name__)
 
 
 class LatentLlamaForCausalLM(LlamaForCausalLM):
-    """支持 Latent 生成的 Llama 模型。"""
+    """Llama model with latent generation support."""
 
     def __init__(self, config):
         super().__init__(config)
@@ -56,7 +56,7 @@ class LatentLlamaForCausalLM(LlamaForCausalLM):
         custom_generate: Optional[str] = None,
         **kwargs,
     ) -> Union[GenerateOutput, torch.LongTensor]:
-        """生成 token 序列，支持 latent 生成模式。"""
+        """Generate token sequences with latent generation mode support."""
 
         if custom_generate is not None:
             trust_remote_code = kwargs.pop("trust_remote_code", None)
@@ -277,7 +277,7 @@ class LatentLlamaForCausalLM(LlamaForCausalLM):
         streamer: Optional["BaseStreamer"],
         **model_kwargs,
     ) -> Dict[str, torch.Tensor]:
-        """Latent 生成的核心采样方法。"""
+        """Core sampling method for latent generation."""
 
         pad_token_id = generation_config._pad_token_tensor
         output_attentions = generation_config.output_attentions

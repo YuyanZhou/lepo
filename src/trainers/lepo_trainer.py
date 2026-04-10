@@ -31,12 +31,12 @@ RewardFunc = Union[str, PreTrainedModel, Callable[[list, list], list[float]]]
 
 
 class LEPOConfig(GRPOConfig):
-    """LEPO 训练配置。"""
+    """LEPO training configuration."""
     pass
 
 
 class LEPOTrainer(GRPOTrainer):
-    """LEPO 训练器。"""
+    """LEPO trainer."""
 
     def __init__(
         self,

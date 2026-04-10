@@ -15,20 +15,20 @@ def CE_loss_from_model(
     labels_mask: torch.Tensor
 ) -> torch.Tensor:
     """
-    计算模型预测分布与给定 top-k 分布在指定标签位置上的交叉熵损失。
-    **注意**: 此函数实现了 Causal LM 的标准损失计算方式，即将 logits 和 labels 后移一位对齐。
-    即用 logits 在位置 i 的输出，去预测 labels 在位置 i+1 的 token。
+    Compute the cross-entropy loss between model predictions and a given top-k distribution at specified label positions.
+    **Note**: This function implements the standard Causal LM loss computation, where logits and labels are shifted by one position.
+    That is, the logits at position i predict the token at position i+1 in labels.
 
     Args:
-        model (Qwen2ForCausalLM): Hugging Face 的 Qwen2ForCausalLM 模型。
-        inputs_embeds (torch.Tensor): 输入的嵌入向量，shape 为 (batch_size, prompt_len + completion_len, hidden_size)。
-        attention_mask (torch.Tensor): 注意力掩码，shape 为 (batch_size, prompt_len + completion_len)。
-        labels_topk_ids (torch.Tensor): 目标分布的 top-k token ID，shape 为 (batch_size, prompt_len + completion_len, topk)。
-        labels_topk_probs (torch.Tensor): 对应 top-k token ID 的目标概率，shape 为 (batch_size, prompt_len + completion_len, topk)。
-        labels_mask (torch.Tensor): 标签掩码，shape 为 (batch_size, prompt_len + completion_len)。
+        model (Qwen2ForCausalLM): Hugging Face Qwen2ForCausalLM model.
+        inputs_embeds (torch.Tensor): Input embeddings, shape (batch_size, prompt_len + completion_len, hidden_size).
+        attention_mask (torch.Tensor): Attention mask, shape (batch_size, prompt_len + completion_len).
+        labels_topk_ids (torch.Tensor): Top-k token IDs for target distribution, shape (batch_size, prompt_len + completion_len, topk).
+        labels_topk_probs (torch.Tensor): Probabilities for the top-k token IDs, shape (batch_size, prompt_len + completion_len, topk).
+        labels_mask (torch.Tensor): Label mask, shape (batch_size, prompt_len + completion_len).
 
     Returns:
-        torch.Tensor: masked_loss 和 outputs
+        torch.Tensor: masked_loss and outputs
     """
     outputs = model(
         inputs_embeds=inputs_embeds,
@@ -83,7 +83,7 @@ def prepare_pretraining_inputs(
     pad_token_id: int = 0,
     ignore_index: int = -100
 ) -> dict:
-    """将包含 prompt 和 completion 的输入数据，转换为适用于模型训练的格式。"""
+    """Convert input data containing prompt and completion into model training format."""
     prompt_ids = inputs['prompt_ids']
     prompt_mask = inputs['prompt_mask']
     completion_ids = inputs['completion_ids']
@@ -234,7 +234,7 @@ def selective_log_softmax(logits, index) -> torch.Tensor:
 
 
 def set_deterministic_seed(seed: int):
-    """设置所有相关的随机种子以确保可复现性。"""
+    """Set all relevant random seeds for reproducibility."""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

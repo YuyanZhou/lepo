@@ -1,4 +1,4 @@
-# Qwen2.5-3B LEPO 在 AIME2024 上的评估配置
+# Qwen2.5-3B LEPO evaluation config on AIME2024
 # latent_length=32, gumbel noise=0.30
 
 model_path: "Qwen/Qwen2.5-3B"
@@ -13,7 +13,7 @@ dataset:
 
 batch_size: 64
 
-# 采样配置
+# Sampling configuration
 num_samples: 8
 seed: 0
 

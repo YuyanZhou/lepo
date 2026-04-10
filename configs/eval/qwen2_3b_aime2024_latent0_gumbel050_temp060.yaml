@@ -1,27 +1,27 @@
-# Qwen2.5-3B 在 AIME2024 上的评估配置
-# latent_length=0 表示不使用 latent 生成（标准生成）
+# Qwen2.5-3B evaluation config on AIME2024
+# latent_length=0 means no latent generation (standard generation)
 
-# 模型路径：可以是 HuggingFace 模型名或本地 checkpoint 路径
+# Model path: can be HuggingFace model name or local checkpoint path
 model_path: "/data_fast/easonyyzhou/lepo/outputs/Qwen2.5-3B-GRPO-0shot-dapo-en-train-20251126_1054/checkpoint-100"
 # model_path: "./outputs/Qwen2.5-3B-GRPO-xxx/checkpoint-100"
 
-# 日志输出目录
+# Log output directory
 log_dir: "./eval_logs/Qwen2.5-3B"
 
-# 数据集配置
+# Dataset configuration
 dataset:
   name: "aime2024"
   split: "test"
   subset: "none"
 
-# 批处理大小
+# Batch size
 batch_size: 64
 
-# 采样配置
+# Sampling configuration
 num_samples: 8
 seed: 0
 
-# 生成配置
+# Generation configuration
 generation_config:
   latent_length: 0
   do_latent_sample: false
