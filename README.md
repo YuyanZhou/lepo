@@ -1,12 +1,8 @@
 # LEPO: **L**atent R**e**asoning **P**olicy **O**ptimization for Large Language Models
 
 ## Abstract
-Recently, latent reasoning has been introduced into large language models (LLMs) to leverage rich information within a continuous space.
-However, without stochastic sampling, these methods inevitably collapse to deterministic inference, failing to discover diverse reasoning paths.
-To bridge the gap, we inject controllable stochasticity into latent reasoning via Gumbel-Softmax, restoring LLMs' exploratory capacity and enhancing their compatibility with Reinforcement Learning (RL).
-Building on this, we propose \textbf{\underline{L}}atent R\textbf{\underline{e}}asoning \textbf{\underline{P}}olicy \textbf{\underline{O}}ptimization~(\textbf{LEPO}), a novel framework that applies RL directly to continuous latent representations.
-Specifically, in rollout stage, LEPO maintains stochasticity to enable diverse trajectory sampling, while in optimization stage, LEPO constructs a unified gradient estimation for both latent representations and discrete tokens.
-Extensive experiments show that LEPO significantly outperforms existing RL methods for discrete and latent reasoning.
+
+Recently, latent reasoning has been introduced into large language models (LLMs) to leverage rich information within a continuous space. However, without stochastic sampling, these methods inevitably collapse to deterministic inference, failing to discover diverse reasoning paths. To bridge the gap, we inject controllable stochasticity into latent reasoning via Gumbel-Softmax, restoring LLMs' exploratory capacity and enhancing their compatibility with Reinforcement Learning (RL). Building on this, we propose **L**atent R**e**asoning **P**olicy **O**ptimization (**LEPO**), a novel framework that applies RL directly to continuous latent representations. Specifically, in rollout stage, LEPO maintains stochasticity to enable diverse trajectory sampling, while in optimization stage, LEPO constructs a unified gradient estimation for both latent representations and discrete tokens. Extensive experiments show that LEPO significantly outperforms existing RL methods for discrete and latent reasoning.
 
 ![LEPO Method](figs/method.png)
 
