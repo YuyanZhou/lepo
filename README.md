@@ -1,3 +1,5 @@
+
+
 # LEPO: **L**atent R**e**asoning **P**olicy **O**ptimization for Large Language Models
 
 ## Abstract
@@ -84,7 +86,7 @@ training:
   num_generations: 8            # Number of samples generated per prompt
   max_completion_length: 2048
 
-latent:
+generation:
   latent_length: 64             # Number of latent tokens
   noise_type: "gumbel"          # Noise type: gumbel, gaussian, uniform
   noise_strength: 0.30          # Noise strength
